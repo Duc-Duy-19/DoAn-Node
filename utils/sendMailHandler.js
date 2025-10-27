@@ -2,11 +2,11 @@ let nodemailer = require('nodemailer');
 let fs = require('fs');
 const transporter = nodemailer.createTransport({
     host: "sandbox.smtp.mailtrap.io",
-    port: 25,
+    port: 2525, // Mailtrap recommends port 2525 or 587
     secure: false, // true for 465, false for other ports
     auth: {
-        user: "",
-        pass: "",
+        user: "b97899f22dd285f25dfcaed3142a7957",
+        pass: "b97899f22dd285f25dfcaed3142a7957", // Mailtrap uses same token for both
     },
 });
 
