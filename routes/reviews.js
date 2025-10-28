@@ -169,6 +169,18 @@ router.post('/', Authentication, async function(req, res, next) {
         path: 'product',
         select: 'name price'
       });
+
+    // Emit socket event for admin
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin_room').emit('new_review', {
+        reviewId: review._id,
+        productName: review.product.name,
+        username: review.user.username,
+        rating: review.rating
+      });
+    }
+
     Response(res, 201, true, review);
   } catch (error) {
     // Xử lý lỗi duplicate key (unique index)

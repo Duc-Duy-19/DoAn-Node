@@ -95,33 +95,33 @@ async function seedData() {
     const electronicsCategory = await Category.create({
       name: 'Điện tử',
       description: 'Thiết bị điện tử',
-      imageURL: 'https://via.placeholder.com/300x200?text=Electronics'
+      imageURL: ''
     });
 
     const phoneCategory = await Category.create({
       name: 'Điện thoại',
       description: 'Điện thoại di động, smartphone',
-      imageURL: 'https://via.placeholder.com/300x200?text=Phone',
+      imageURL: '',
       parentCategory: electronicsCategory._id
     });
 
     const laptopCategory = await Category.create({
       name: 'Laptop',
       description: 'Máy tính xách tay',
-      imageURL: 'https://via.placeholder.com/300x200?text=Laptop',
+      imageURL: '',
       parentCategory: electronicsCategory._id
     });
 
     const fashionCategory = await Category.create({
       name: 'Thời trang',
       description: 'Quần áo, phụ kiện',
-      imageURL: 'https://via.placeholder.com/300x200?text=Fashion'
+      imageURL: ''
     });
 
     const booksCategory = await Category.create({
       name: 'Sách',
       description: 'Sách, tạp chí',
-      imageURL: 'https://via.placeholder.com/300x200?text=Books'
+      imageURL: ''
     });
 
     console.log('✅ Categories created:', {
@@ -142,10 +142,7 @@ async function seedData() {
         description: 'Apple iPhone 15 Pro Max 256GB - Titan Tự Nhiên',
         price: 34990000,
         stock: 50,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=iPhone+15+Pro+1',
-          'https://via.placeholder.com/400x400?text=iPhone+15+Pro+2'
-        ],
+        imageURLs: [],
         category: phoneCategory._id
       },
       {
@@ -153,10 +150,7 @@ async function seedData() {
         description: 'Samsung Galaxy S24 Ultra 12GB 256GB',
         price: 29990000,
         stock: 30,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=S24+Ultra+1',
-          'https://via.placeholder.com/400x400?text=S24+Ultra+2'
-        ],
+        imageURLs: [],
         category: phoneCategory._id
       },
       {
@@ -164,10 +158,7 @@ async function seedData() {
         description: 'MacBook Pro 14 inch M3 8GB 512GB',
         price: 45990000,
         stock: 20,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=MacBook+Pro+1',
-          'https://via.placeholder.com/400x400?text=MacBook+Pro+2'
-        ],
+        imageURLs: [],
         category: laptopCategory._id
       },
       {
@@ -175,9 +166,7 @@ async function seedData() {
         description: 'Dell XPS 13 Plus Intel Core i7 16GB 512GB',
         price: 35990000,
         stock: 15,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=Dell+XPS+1'
-        ],
+        imageURLs: [],
         category: laptopCategory._id
       },
       {
@@ -185,9 +174,7 @@ async function seedData() {
         description: 'Áo thun nam cotton cao cấp',
         price: 199000,
         stock: 100,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=Tshirt'
-        ],
+        imageURLs: [],
         category: fashionCategory._id
       },
       {
@@ -195,9 +182,7 @@ async function seedData() {
         description: 'Quần jean nam form slim fit co giãn',
         price: 450000,
         stock: 80,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=Jeans'
-        ],
+        imageURLs: [],
         category: fashionCategory._id
       },
       {
@@ -205,9 +190,7 @@ async function seedData() {
         description: 'How to Win Friends and Influence People - Dale Carnegie',
         price: 89000,
         stock: 200,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=Book+1'
-        ],
+        imageURLs: [],
         category: booksCategory._id
       },
       {
@@ -215,9 +198,7 @@ async function seedData() {
         description: 'Lược Sử Loài Người - Yuval Noah Harari',
         price: 120000,
         stock: 150,
-        imageURLs: [
-          'https://via.placeholder.com/400x400?text=Book+2'
-        ],
+        imageURLs: [],
         category: booksCategory._id
       }
     ];

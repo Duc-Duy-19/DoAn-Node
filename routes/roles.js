@@ -28,8 +28,8 @@ router.get("/:id", async function (req, res, next) {
 
 router.post(
   "/",
-  Authentication,
-  Authorization("ADMIN"),
+  // Authentication,
+  // Authorization("ADMIN"),
   async function (req, res, next) {
     try {
       let newRole = new roleSchema({ name: req.body.name });

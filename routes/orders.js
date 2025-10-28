@@ -169,6 +169,17 @@ router.post('/', Authentication, async function(req, res, next) {
     let orderWithItems = order.toObject();
     orderWithItems.items = orderItems;
 
+    // Emit socket event for admin
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin_room').emit('order_created', {
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        user: order.user.username,
+        totalAmount: order.totalAmount
+      });
+    }
+
     Response(res, 201, true, orderWithItems);
   } catch (error) {
     Response(res, 500, false, error.message);
@@ -195,6 +206,17 @@ router.put('/:id/status', Authentication, Authorization("ADMIN", "MOD"), async f
       .populate({
         path: 'shippingAddress'
       });
+
+    // Emit socket event to user
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user_${order.user}`).emit('order_status_updated', {
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status
+      });
+    }
+
     Response(res, 200, true, updatedOrder);
   } catch (error) {
     Response(res, 500, false, error.message);

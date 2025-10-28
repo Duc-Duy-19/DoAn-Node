@@ -6,6 +6,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+var cors = require("cors");
 let mongoose = require("mongoose");
 let { Response } = require("./utils/responseHandler");
 
@@ -24,11 +25,18 @@ var app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+// CORS configuration
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3002'], // Client and Admin URLs
+  credentials: true
+}));
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use('/uploads', express.static(path.join(__dirname, "public/uploads")));
 // serve templates (static assets like reset-password.html / reset-password.js)
 app.use("/templates", express.static(path.join(__dirname, "templates")));
 // serve resources (static frontend files: views, js, css)
@@ -45,6 +53,7 @@ app.use("/reviews", require("./routes/reviews"));
 app.use("/carts", require("./routes/carts"));
 app.use("/orders", require("./routes/orders"));
 app.use("/orderItems", require("./routes/orderItems"));
+app.use("/upload", require("./routes/upload"));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -56,7 +65,9 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
-  Response(res, err.status || 500, false, err);
+  // Return error message as string, not object
+  const errorMessage = err.message || 'Internal Server Error';
+  Response(res, err.status || 500, false, errorMessage); 
 });
 
 module.exports = app;

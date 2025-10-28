@@ -22,6 +22,40 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
+ * Setup Socket.IO
+ */
+const { Server } = require('socket.io');
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:3001', 'http://localhost:3002'], // client and admin ports
+    credentials: true
+  }
+});
+
+// Store io instance in app for use in routes
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+
+  // Join room for specific user (for personal notifications)
+  socket.on('join_user_room', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined their room`);
+  });
+
+  // Join admin room
+  socket.on('join_admin_room', () => {
+    socket.join('admin_room');
+    console.log('Admin joined admin room');
+  });
+});
+
+/**
  * Listen on provided port, on all network interfaces.
  */
 

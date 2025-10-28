@@ -24,16 +24,31 @@ module.exports = {
     },
     Authorization: function (...roleRequire) {
         return async function (req, res, next) {
-            let userId = req.userId;
-            let user = await users.findById(userId).populate({
-                path: 'role',
-                select: 'name'
-            });
-            let role = user.role.name;
-            if(roleRequire.includes(role)){
-                next();
-            }else{
-                Response(res, 403, false, "ban khong du quyen");
+            try {
+                let userId = req.userId;
+                let user = await users.findById(userId).populate({
+                    path: 'role',
+                    select: 'name'
+                });
+                
+                // Check if user exists
+                if (!user) {
+                    return Response(res, 403, false, "User không tồn tại");
+                }
+                
+                // Check if role exists
+                if (!user.role || !user.role.name) {
+                    return Response(res, 403, false, "User chưa có quyền");
+                }
+                
+                let role = user.role.name;
+                if(roleRequire.includes(role)){
+                    next();
+                }else{
+                    Response(res, 403, false, "Bạn không đủ quyền");
+                }
+            } catch (error) {
+                Response(res, 500, false, "Lỗi kiểm tra quyền: " + error.message);
             }
         }
     }

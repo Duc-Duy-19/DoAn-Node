@@ -40,7 +40,9 @@ module.exports = {
         let result = validationResult(req);
         console.log(result);
         if (result.errors.length > 0) {
-            Response(res, 404, false, result);
+            // Format error messages as readable string
+            const errorMessages = result.errors.map(err => err.msg).join(', ');
+            Response(res, 400, false, errorMessages);
         } else {
             next();
         }
