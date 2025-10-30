@@ -10,8 +10,12 @@ let orderItemSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Tính tổng phụ trước khi lưu
-orderItemSchema.pre('save', function(next) {
-    this.subtotal = this.price * this.quantity;
+// Tính tổng phụ trước khi validate (để đảm bảo field `subtotal` có giá trị trước khi chạy các validator `required`)
+orderItemSchema.pre('validate', function(next) {
+    // đảm bảo price và quantity đã có giá trị hợp lệ trước khi tính
+    if (this.price !== undefined && this.quantity !== undefined) {
+        this.subtotal = this.price * this.quantity;
+    }
     next();
 });
 
