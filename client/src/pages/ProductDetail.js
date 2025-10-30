@@ -15,10 +15,20 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [canReview, setCanReview] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [eligibilityReason, setEligibilityReason] = useState('');
 
   useEffect(() => {
     fetchProductAndReviews();
   }, [id]);
+
+  useEffect(() => {
+    if (isAuthenticated) checkEligibility();
+    else setCanReview(false);
+  }, [id, isAuthenticated]);
 
   const fetchProductAndReviews = async () => {
     try {
@@ -38,6 +48,42 @@ function ProductDetail() {
       console.error('Error fetching product:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkEligibility = async () => {
+    try {
+      const res = await api.get(`/reviews/eligibility/${id}`);
+      setCanReview(!!res.data?.data?.canReview);
+      setEligibilityReason(res.data?.data?.reason || '');
+    } catch (e) {
+      setCanReview(false);
+      setEligibilityReason('');
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated || !canReview) return;
+    try {
+      setSubmitting(true);
+      const res = await api.post('/reviews', { product: id, rating, comment });
+      if (res.data?.success) {
+        setComment('');
+        setRating(5);
+        await fetchProductAndReviews();
+        setToastMessage('Đã gửi đánh giá, cảm ơn bạn!');
+        setShowToast(true);
+        // Sau khi đánh giá xong, không cho đánh giá lại (server cũng chặn)
+        setCanReview(false);
+      }
+    } catch (err) {
+      const srv = err.response?.data?.data;
+      const msg = typeof srv === 'string' ? srv : (srv?.message || 'Không thể gửi đánh giá');
+      setToastMessage(msg);
+      setShowToast(true);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -158,6 +204,57 @@ function ProductDetail() {
             </Button>
           </Col>
         </Row>
+
+        {/* Review Form (only buyers with completed order) */}
+        {isAuthenticated && canReview && (
+          <Row className="mt-5">
+            <Col md={8}>
+              <h4 className="mb-3">Viết đánh giá</h4>
+              <Card className="mb-4">
+                <Card.Body>
+                  <Form onSubmit={handleSubmitReview}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Số sao</Form.Label>
+                      <Form.Select value={rating} onChange={(e) => setRating(parseInt(e.target.value) || 5)}>
+                        {[5,4,3,2,1].map(v => (
+                          <option key={v} value={v}>{v} sao</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Nhận xét</Form.Label>
+                      <Form.Control as="textarea" rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Chia sẻ cảm nhận của bạn..."/>
+                    </Form.Group>
+                    <Button type="submit" variant="primary" disabled={submitting || !comment.trim()}>
+                      {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                    </Button>
+                  </Form>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
+        {/* Not eligible message */}
+        {isAuthenticated && !canReview && (
+          <Row className="mt-4">
+            <Col md={8}>
+              <Alert variant="warning" className="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Bạn chưa thể đánh giá sản phẩm này.</strong>
+                  <div className="small mt-1">
+                    {eligibilityReason === 'no_completed_orders' && 'Bạn chưa có đơn hàng hoàn tất nào.'}
+                    {eligibilityReason === 'product_not_in_completed_orders' && 'Chúng tôi không tìm thấy sản phẩm này trong đơn hàng đã hoàn tất của bạn.'}
+                    {!eligibilityReason && 'Yêu cầu: đã mua và đơn ở trạng thái hoàn tất.'}
+                  </div>
+                </div>
+                <Button variant="outline-primary" onClick={() => window.location.href = '/orders'}>
+                  Xem đơn hàng của tôi
+                </Button>
+              </Alert>
+            </Col>
+          </Row>
+        )}
 
         {/* Reviews Section */}
         <Row className="mt-5">

@@ -11,6 +11,7 @@ function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [searchText, setSearchText] = useState(searchParams.get('search') || '');
 
   useEffect(() => {
     fetchCategories();
@@ -18,7 +19,7 @@ function Products() {
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchParams]);
 
   const fetchCategories = async () => {
     try {
@@ -34,12 +35,13 @@ function Products() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      let url = '/products';
-      if (selectedCategory) {
-        url = `/products/category/${selectedCategory}`;
-      }
-      
-      const response = await api.get(url);
+      // Build unified endpoint with query params
+      const params = {};
+      if (selectedCategory) params.category = selectedCategory;
+      const qParam = searchParams.get('search') || '';
+      if (qParam) params.q = qParam;
+
+      const response = await api.get('/products', { params });
       if (response.data.success) {
         setProducts(response.data.data);
       }
@@ -53,11 +55,11 @@ function Products() {
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
-    if (categoryId) {
-      setSearchParams({ category: categoryId });
-    } else {
-      setSearchParams({});
-    }
+    const q = searchParams.get('search');
+    if (categoryId && q) setSearchParams({ category: categoryId, search: q });
+    else if (categoryId) setSearchParams({ category: categoryId });
+    else if (q) setSearchParams({ search: q });
+    else setSearchParams({});
   };
 
   return (
@@ -107,7 +109,11 @@ function Products() {
           ) : (
             <>
               <p className="text-muted mb-3">
-                Tìm thấy {products.length} sản phẩm
+                {searchParams.get('search') ? (
+                  <>Tìm thấy {products.length} sản phẩm cho "{searchParams.get('search')}"</>
+                ) : (
+                  <>Tìm thấy {products.length} sản phẩm</>
+                )}
               </p>
               <Row>
                 {products.map(product => (

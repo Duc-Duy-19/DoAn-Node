@@ -149,6 +149,45 @@ a:hover {
   color: var(--primary-dark);
 }
 
+/* Search suggestions dropdown */
+.search-suggest-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  margin-top: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1050;
+  max-height: 420px;
+  overflow: auto;
+  padding: 6px;
+}
+
+.search-suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.search-suggest-item:hover,
+.search-suggest-item.active {
+  background: var(--gray-lighter);
+}
+
+.search-suggest-footer {
+  padding: 10px;
+  text-align: center;
+  color: var(--primary-color);
+  font-weight: 600;
+  border-top: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
 /* Cart Badge */
 .cart-badge {
   position: absolute;

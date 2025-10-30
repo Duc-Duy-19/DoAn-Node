@@ -11,13 +11,57 @@ let { Authentication, Authorization } = require('../utils/authHandler');
  * ===========================================
  */
 
-// GET - Lấy tất cả sản phẩm
+// GET - Lấy tất cả sản phẩm (hỗ trợ lọc theo q và category)
 router.get('/', async function(req, res, next) {
   try {
-    let products = await productSchema.find({isDeleted: false}).populate({
+    const { q, category } = req.query;
+
+    const filter = { isDeleted: false };
+    if (q && typeof q === 'string' && q.trim() !== '') {
+      const regex = new RegExp(q.trim(), 'i');
+      filter.$or = [
+        { name: { $regex: regex } },
+        { description: { $regex: regex } }
+      ];
+    }
+    if (category && category.match(/^[0-9a-fA-F]{24}$/)) {
+      filter.category = category;
+    }
+
+    let products = await productSchema.find(filter).populate({
       path: 'category',
       select: 'name'
     });
+    Response(res, 200, true, products);
+  } catch (error) {
+    Response(res, 500, false, error.message);
+  }
+});
+
+// GET - Tìm kiếm nhanh (gợi ý tức thời)
+router.get('/search', async function(req, res, next) {
+  try {
+    const q = (req.query.q || '').toString();
+    const limit = Math.min(parseInt(req.query.limit) || 8, 20);
+
+    if (!q.trim()) {
+      Response(res, 200, true, []);
+      return;
+    }
+
+    const regex = new RegExp(q.trim(), 'i');
+    const products = await productSchema
+      .find({
+        isDeleted: false,
+        $or: [
+          { name: { $regex: regex } },
+          { description: { $regex: regex } }
+        ]
+      })
+      .select('name price imageURLs category')
+      .limit(limit)
+      .populate({ path: 'category', select: 'name' });
+
     Response(res, 200, true, products);
   } catch (error) {
     Response(res, 500, false, error.message);

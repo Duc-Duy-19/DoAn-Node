@@ -3,6 +3,8 @@ var router = express.Router();
 let reviewSchema = require('../schemas/reviews');
 let productSchema = require('../schemas/products');
 let userSchema = require('../schemas/users');
+let orderSchema = require('../schemas/orders');
+let orderItemSchema = require('../schemas/orderItems');
 let { Response } = require('../utils/responseHandler');
 let { Authentication, Authorization } = require('../utils/authHandler');
 
@@ -138,6 +140,35 @@ router.post('/', Authentication, async function(req, res, next) {
       return;
     }
 
+    // Kiểm tra user đã mua sản phẩm và đơn đã hoàn tất chưa (chỉ xét đơn của user hiện tại)
+    const completedOrders = await orderSchema.find({
+      user: req.userId,
+      status: 'completed',
+      isDeleted: false
+    }).select('_id');
+
+    const orderIds = completedOrders.map(o => o._id);
+    let hasCompletedOrder = false;
+    let denyReason = '';
+    if (orderIds.length > 0) {
+      hasCompletedOrder = await orderItemSchema.exists({
+        order: { $in: orderIds },
+        product: req.body.product,
+        isDeleted: false
+      });
+      if (!hasCompletedOrder) denyReason = 'product_not_in_completed_orders';
+    } else {
+      denyReason = 'no_completed_orders';
+    }
+
+    if (!hasCompletedOrder) {
+      Response(res, 403, false, {
+        message: 'Only customers who completed an order for this product can review',
+        reason: denyReason
+      });
+      return;
+    }
+
     // Kiểm tra user đã đánh giá sản phẩm này chưa (1 user chỉ đánh giá 1 lần)
     let existingReview = await reviewSchema.findOne({
       user: req.userId,
@@ -189,6 +220,39 @@ router.post('/', Authentication, async function(req, res, next) {
     } else {
       Response(res, 500, false, error.message);
     }
+  }
+});
+
+// GET - Kiểm tra quyền được đánh giá theo sản phẩm (đã mua và hoàn tất chưa)
+router.get('/eligibility/:productId', Authentication, async function(req, res, next) {
+  try {
+    if (!req.params.productId.match(/^[0-9a-fA-F]{24}$/)) {
+      Response(res, 400, false, "Invalid product ID");
+      return;
+    }
+
+    const completedOrders = await orderSchema.find({
+      user: req.userId,
+      status: 'completed',
+      isDeleted: false
+    }).select('_id');
+    const orderIds = completedOrders.map(o => o._id);
+    let canReview = false;
+    let reason = '';
+    if (orderIds.length > 0) {
+      canReview = !!(await orderItemSchema.exists({
+        order: { $in: orderIds },
+        product: req.params.productId,
+        isDeleted: false
+      }));
+      if (!canReview) reason = 'product_not_in_completed_orders';
+    } else {
+      reason = 'no_completed_orders';
+    }
+
+    Response(res, 200, true, { canReview, reason });
+  } catch (error) {
+    Response(res, 500, false, error.message);
   }
 });
 
