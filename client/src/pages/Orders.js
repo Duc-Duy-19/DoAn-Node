@@ -6,7 +6,7 @@ import { getSocket } from '../services/socket';
 import api from '../services/api';
 
 function Orders() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [orders, setOrders] = useState([]);
@@ -17,6 +17,7 @@ function Orders() {
   const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
+    if (authLoading) return; // wait until auth is resolved
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -38,7 +39,7 @@ function Orders() {
         socket.off('order_status_updated');
       }
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const fetchOrders = async () => {
     try {

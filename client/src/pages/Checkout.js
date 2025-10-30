@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 function Checkout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [addresses, setAddresses] = useState([]);
@@ -19,12 +19,13 @@ function Checkout() {
   const [orderNumber, setOrderNumber] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
     fetchData();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const fetchData = async () => {
     try {

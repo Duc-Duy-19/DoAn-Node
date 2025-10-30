@@ -5,19 +5,20 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 function Cart() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
     fetchCart();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const fetchCart = async () => {
     try {

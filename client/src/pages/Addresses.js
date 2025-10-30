@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 function Addresses() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [addresses, setAddresses] = useState([]);
@@ -23,12 +23,13 @@ function Addresses() {
   });
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
     fetchAddresses();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const fetchAddresses = async () => {
     try {

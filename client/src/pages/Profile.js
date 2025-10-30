@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 function Profile() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -17,10 +17,13 @@ function Profile() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  if (!isAuthenticated) {
-    navigate('/login');
-    return null;
-  }
+  // Redirect to login only after auth state is resolved
+  React.useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
